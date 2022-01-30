@@ -30,7 +30,7 @@ RUN set -x && \
         "${TEMP_PACKAGES[@]}"\
         && \
     # vdlm2dec
-    git clone --single-branch --branch testing https://github.com/TLeconte/vdlm2dec.git /src/vdlm2dec && \
+    git clone https://github.com/TLeconte/vdlm2dec.git /src/vdlm2dec && \
     pushd /src/vdlm2dec && \
     #git checkout master && \
     git checkout testing && \
