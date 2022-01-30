@@ -1,0 +1,76 @@
+#!/usr/bin/with-contenv bash
+#shellcheck shell=bash
+
+# STARTUP SEQUENCE
+#  - vdlm2dec does not depend on any services and should start immediately
+
+VDLM_BIN="/usr/local/bin/vdlm2dec"
+# shellcheck disable=SC2001
+DEVICE_ID=""
+FREQ_STRING=""
+
+if [ -z "$GAIN" ]; then
+    GAIN="400"
+fi
+
+VDLM_CMD=("-J" "-G" "-E" "-U" "-g" "$GAIN" "-i" "$FEED_ID")
+
+if [ -n "${PPM}" ]; then
+	VDLM_CMD+=("-p" "$PPM")
+fi
+
+if [ -n "${QUIET_LOGS}" ]; then
+# 	VDLM_CMD+=("-l" "/dev/null")
+# else
+	VDLM_CMD+=("-v")
+fi
+
+# Send output JSON to acars_server
+if [ -n "${SERVER}" ]; then
+	if [[ "${MODE}" == @(J|j) ]]; then
+		VDLM_CMD+=("-j" "127.0.0.1:5550")
+	elif [[ "${MODE}" == @(P|p) ]]; then
+		VDLM_CMD+=("-n" "127.0.0.1:5550")
+	elif [[ "${MODE}" == @(A|a) ]]; then
+		VDLM_CMD+=("-N" "127.0.0.1:5550")
+	fi
+fi
+
+# Specify device ID
+if [ -n "${DEVICE_ID}" ]; then
+	VDLM_CMD+=("-r" "$DEVICE_ID")
+fi
+
+# shellcheck disable=SC2206
+VDLM_CMD+=($FREQ_STRING)
+
+set -eo pipefail
+
+echo "[vdlm2dec-$DEVICE_ID] Starting: '$VDLM_BIN" "${VDLM_CMD[*]}'"
+if [[ -n "${QUIET_LOGS}" ]]; then
+	# shellcheck disable=SC2016
+	"$VDLM_BIN" "${VDLM_CMD[@]}" 2>&1 | \
+	stdbuf -oL sed --unbuffered '/^$/d' | \
+	stdbuf -oL awk '! /^dumpvdl2/' | \
+	stdbuf -oL awk '! /^Sampling rate set/' | \
+	stdbuf -oL awk '! /^Found \[0-9]+ device(s):/' | \
+	stdbuf -oL awk '! /^  [0-9]+/' | \
+	stdbuf -oL awk '! /^Using device [0-9]+/' | \
+	stdbuf -oL awk '! /^Found /' | \
+	stdbuf -oL awk '! /^Exact sample rate /' | \
+	stdbuf -oL awk '! /^Setting sample rate/' | \
+	stdbuf -oL awk '! /PLL not locked!$/' | \
+	stdbuf -oL awk '! /^Center frequency set/' | \
+	stdbuf -oL awk '! /^Device [#]?[0-9]+/' | \
+	stdbuf -oL awk '! /^Tuner gain: /' | \
+	stdbuf -oL awk '! /^Set center freq. /' | \
+	stdbuf -oL awk '! /^Decoding [0-9]+ channels/' | \
+	stdbuf -oL awk '! /^Allocating [0-9]+ zero-copy buffers: /' | \
+	stdbuf -oL awk '{print "[vdlm2dec] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
+else
+	# shellcheck disable=SC2016
+	"$VDLM_BIN" "${VDLM_CMD[@]}" \
+	2>&1 | stdbuf -oL sed --unbuffered '/^$/d' | stdbuf -oL awk '{print "[vdlm2dec] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
+fi
+
+sleep 5
