@@ -32,8 +32,6 @@ RUN set -x && \
     # vdlm2dec
     git clone https://github.com/TLeconte/vdlm2dec.git /src/vdlm2dec && \
     pushd /src/vdlm2dec && \
-    #git checkout master && \
-    git checkout testing && \
     mkdir build && \
     pushd build && \
     cmake ../ -Drtl=ON && \
