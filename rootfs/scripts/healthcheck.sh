@@ -16,12 +16,12 @@ function get_pid_of_decoder {
   service_dir="$1"
 
   # Ensure variables are unset
-  unset DEVICE_ID FREQS_VDLM VDLM_BIN FREQS_ACARS ACARS_BIN
+  unset DEVICE_ID VDLM_BIN FREQ_STRING VDLM_BIN
 
   # Get DEVICE_ID
   eval "$(grep "DEVICE_ID=\"" "$service_dir"/run)"
 
-  # Get FREQS_ACARS
+  # Get FREQS_STRING
   eval "$(grep "FREQ_STRING=\"" "$service_dir"/run)"
 
   # Get VDLM_BIN
@@ -30,7 +30,7 @@ function get_pid_of_decoder {
   # Get PS output for the relevant process
   if [[ -n "$VDLM_BIN" ]]; then
     # shellcheck disable=SC2009
-    ps_output=$(ps aux | grep "$VDLM_BIN" | grep " -r $DEVICE_ID " | grep " $FREQ_STRING")
+    ps_output=$(ps aux | grep "$VDLM_BIN" | grep " -r $DEVICE_ID " | grep "$FREQ_STRING")
   fi
 
   # Find the PID of the decoder based on command line
@@ -99,10 +99,10 @@ acars_pidof_acars_stats=$(pgrep -fx 'socat -u TCP:127.0.0.1:15555 CREATE:/run/ac
 
 # Ensure TCP connection to vdlm_server at 127.0.0.1:15555
 if ! check_tcp4_connection_established_for_pid "127.0.0.1" "ANY" "127.0.0.1" "15555" "${acars_pidof_acars_stats}"; then
-echo "vdlm_stats (pid $acars_pidof_acars_stats) not connected to acars_server (pid $acars_pidof_acars_tcp_server) at 127.0.0.1:15555: UNHEALTHY"
+echo "vdlm_stats (pid $acars_pidof_acars_stats) not connected to vdlm_server (pid $acars_pidof_acars_tcp_server) at 127.0.0.1:15555: UNHEALTHY"
 EXITCODE=1
 else
-echo "vdlm_stats (pid $acars_pidof_acars_stats) connected to acars_server (pid $acars_pidof_acars_tcp_server) at 127.0.0.1:15555: HEALTHY"
+echo "vdlm_stats (pid $acars_pidof_acars_stats) connected to vdlm_server (pid $acars_pidof_acars_tcp_server) at 127.0.0.1:15555: HEALTHY"
 fi
 
 echo "==== Check for VDLM activity ====="
