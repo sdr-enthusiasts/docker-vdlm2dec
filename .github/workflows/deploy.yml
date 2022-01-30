@@ -25,7 +25,7 @@ jobs:
     #  - IMAGE: image name on dockerhub
     env:
       REPO: fredclausen
-      IMAGE: acarsdec
+      IMAGE: vdlm2dec
       PUSH: true
     steps:
 
