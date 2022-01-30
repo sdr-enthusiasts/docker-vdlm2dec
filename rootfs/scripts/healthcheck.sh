@@ -24,16 +24,13 @@ function get_pid_of_decoder {
   # Get FREQS_ACARS
   eval "$(grep "FREQ_STRING=\"" "$service_dir"/run)"
 
-  # Get ACARS_BIN
-  eval "$(grep "ACARS_BIN=\"" "$service_dir"/run)"
+  # Get VDLM_BIN
+  eval "$(grep "VDLM_BIN=\"" "$service_dir"/run)"
 
   # Get PS output for the relevant process
-  if [[ -n "$ACARS_BIN" ]]; then
+  if [[ -n "$VDLM_BIN" ]]; then
     # shellcheck disable=SC2009
-    ps_output=$(ps aux | grep "$ACARS_BIN" | grep " -r $DEVICE_ID " | grep " $FREQS_ACARS")
-  elif [[ -n "$VDLM_BIN" ]]; then
-    # shellcheck disable=SC2009
-    ps_output=$(ps aux | grep "$VDLM_BIN" | grep " --rtlsdr $DEVICE_ID " | grep " $FREQS_VDLM")
+    ps_output=$(ps aux | grep "$VDLM_BIN" | grep " -r $DEVICE_ID " | grep " $FREQ_STRING")
   fi
 
   # Find the PID of the decoder based on command line
@@ -44,20 +41,20 @@ function get_pid_of_decoder {
 
 }
 
-# ===== Check acarsdec processes =====
+# ===== Check vdlmdec processes =====
 
 # For each service...
 for service_dir in /etc/services.d/*; do
   service_name=$(basename "$service_dir")
 
-  # If the service is acarsdec-*...
-  if [[ "$service_name" == acarsdec ]]; then
+  # If the service is vdlmdec-*...
+  if [[ "$service_name" == vdlm2dec ]]; then
 
     decoder_pid=$(get_pid_of_decoder "$service_dir")
-    decoder_udp_port="5550"
-    decoder_server_prefix="acars"
+    decoder_udp_port="5555"
+    decoder_server_prefix="vdlm"
 
-  # If the server isn't acarsdec-.
+  # If the server isn't vdlm2dec-.
   else
     # skip it!
     continue
@@ -82,52 +79,41 @@ for service_dir in /etc/services.d/*; do
 
 done
 
-# ===== Check acars_server, acars_feeder, acars_stats processes =====
+# ===== Check vdlm_server, vdlm_feeder, vdlm_stats processes =====
 
-echo "==== Checking acars_server ====="
+echo "==== Checking vdlm_server ====="
 
-# Check acars_server is listening for TCP on 127.0.0.1:15550
-acars_pidof_acars_tcp_server=$(pgrep -f 'ncat -4 --keep-open --listen 0.0.0.0 15550')
-if ! check_tcp4_socket_listening_for_pid "0.0.0.0" "15550" "${acars_pidof_acars_tcp_server}"; then
-    echo "acars_server TCP not listening on port 15550 (pid $acars_pidof_acars_tcp_server): UNHEALTHY"
+# Check vdlm_server is listening for TCP on 127.0.0.1:15550
+acars_pidof_acars_tcp_server=$(pgrep -f 'ncat -4 --keep-open --listen 0.0.0.0 15555')
+if ! check_tcp4_socket_listening_for_pid "0.0.0.0" "15555" "${acars_pidof_acars_tcp_server}"; then
+    echo "vdlm_server TCP not listening on port 15555 (pid $acars_pidof_acars_tcp_server): UNHEALTHY"
     EXITCODE=1
 else
-    echo "acars_server TCP listening on port 15550 (pid $acars_pidof_acars_tcp_server): HEALTHY"
+    echo "vdlm_server TCP listening on port 15555 (pid $acars_pidof_acars_tcp_server): HEALTHY"
 fi
 
-if [ -n "${ENABLE_WEB}" ]; then
-    if ! netstat -anp | grep -P "tcp\s+\d+\s+\d+\s+127.0.0.1:[0-9]+\s+127.0.0.1:15550\s+ESTABLISHED\s+[0-9]+/python3" > /dev/null 2>&1; then
-        echo "acars_server TCP4 connection between 127.0.0.1:ANY and 127.0.0.1:15550 for python3 established: FAIL"
-        echo "acars_server TCP not connected to python server on port 15550: UNHEALTHY"
-        EXITCODE=1
-    else
-        echo "TCP4 connection between 127.0.0.1:ANY and 127.0.0.1:15550 for python3 established: PASS"
-        echo "acars_server TCP connected to python3 server on port 15550: HEALTHY"
-    fi
-fi
+echo "==== Checking vdlm_stats ====="
 
-echo "==== Checking acars_stats ====="
+# Check vdlm_stats:
+acars_pidof_acars_stats=$(pgrep -fx 'socat -u TCP:127.0.0.1:15555 CREATE:/run/acars/vdlm2.past5min.json')
 
-# Check acars_stats:
-acars_pidof_acars_stats=$(pgrep -fx 'socat -u TCP:127.0.0.1:15550 CREATE:/run/acars/acars.past5min.json')
-
-# Ensure TCP connection to acars_server at 127.0.0.1:15550
-if ! check_tcp4_connection_established_for_pid "127.0.0.1" "ANY" "127.0.0.1" "15550" "${acars_pidof_acars_stats}"; then
-echo "acars_stats (pid $acars_pidof_acars_stats) not connected to acars_server (pid $acars_pidof_acars_tcp_server) at 127.0.0.1:15550: UNHEALTHY"
+# Ensure TCP connection to vdlm_server at 127.0.0.1:15555
+if ! check_tcp4_connection_established_for_pid "127.0.0.1" "ANY" "127.0.0.1" "15555" "${acars_pidof_acars_stats}"; then
+echo "vdlm_stats (pid $acars_pidof_acars_stats) not connected to acars_server (pid $acars_pidof_acars_tcp_server) at 127.0.0.1:15555: UNHEALTHY"
 EXITCODE=1
 else
-echo "acars_stats (pid $acars_pidof_acars_stats) connected to acars_server (pid $acars_pidof_acars_tcp_server) at 127.0.0.1:15550: HEALTHY"
+echo "vdlm_stats (pid $acars_pidof_acars_stats) connected to acars_server (pid $acars_pidof_acars_tcp_server) at 127.0.0.1:15555: HEALTHY"
 fi
 
-echo "==== Check for ACARS activity ====="
+echo "==== Check for VDLM activity ====="
 
 # Check for activity
 # read .json files, ensure messages received in past hour
-acars_num_msgs_past_hour=$(find /run/acars -type f -name 'acars.*.json' -cmin -60 -exec cat {} \; | wc -l)
+acars_num_msgs_past_hour=$(find /run/acars -type f -name 'vdlm2.*.json' -cmin -60 -exec cat {} \; | wc -l)
 if [[ "$acars_num_msgs_past_hour" -gt 0 ]]; then
-    echo "$acars_num_msgs_past_hour ACARS messages received in past hour: HEALTHY"
+    echo "$acars_num_msgs_past_hour VDLM messages received in past hour: HEALTHY"
 else
-    echo "$acars_num_msgs_past_hour ACARS messages received in past hour: UNHEALTHY"
+    echo "$acars_num_msgs_past_hour VDLM messages received in past hour: UNHEALTHY"
     EXITCODE=1
 fi
 
