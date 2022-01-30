@@ -52,7 +52,7 @@ for service_dir in /etc/services.d/*; do
 
     decoder_pid=$(get_pid_of_decoder "$service_dir")
     decoder_udp_port="5555"
-    decoder_server_prefix="vdlm"
+    decoder_server_prefix="vdlm2dec"
 
   # If the server isn't vdlm2dec-.
   else
