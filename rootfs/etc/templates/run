@@ -53,6 +53,7 @@ VDLM_CMD+=($FREQ_STRING)
 set -eo pipefail
 
 echo "[vdlm2dec] Starting: '$VDLM_BIN" "${VDLM_CMD[*]}'"
+
 if [[ ${QUIET_LOGS,,} =~ true ]]; then
 	# shellcheck disable=SC2016
 	"$VDLM_BIN" "${VDLM_CMD[@]}" 2>&1 | \
