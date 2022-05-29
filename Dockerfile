@@ -26,11 +26,12 @@ RUN set -x && \
     # install packages
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        "${KEPT_PACKAGES[@]}" \
-        "${TEMP_PACKAGES[@]}"\
-        && \
+    "${KEPT_PACKAGES[@]}" \
+    "${TEMP_PACKAGES[@]}"\
+    && \
     # vdlm2dec
-    git clone https://github.com/TLeconte/vdlm2dec.git /src/vdlm2dec && \
+    # git clone https://github.com/TLeconte/vdlm2dec.git /src/vdlm2dec && \
+    git clone https://github.com/wiedehopf/vdlm2dec.git /src/vdlm2dec && \
     pushd /src/vdlm2dec && \
     mkdir build && \
     pushd build && \
