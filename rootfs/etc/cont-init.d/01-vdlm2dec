@@ -93,7 +93,7 @@ s6-chmod 0755 /etc/services.d/vdlm2dec/run
 mkdir -p /run/acars
 touch /run/acars/vdlm2.past5min.json
 
-sed -i "s/DEVICE_ID=\"\"/DEVICE_ID=\"$OUTPUT_DEVICE_ID\"/g" /etc/services.d/vdlm2dec/run
+#sed -i "s/DEVICE_ID=\"\"/DEVICE_ID=\"$OUTPUT_DEVICE_ID\"/g" /etc/services.d/vdlm2dec/run
 sed -i "s/FREQ_STRING=\"\"/FREQ_STRING=\"$FREQ_STRING\"/g" /etc/services.d/vdlm2dec/run
 
 # Everything is good to go. Exit with 0
