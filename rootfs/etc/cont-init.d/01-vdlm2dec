@@ -59,26 +59,16 @@ if [[ -z "${SERIAL}" ]]; then
 	exit 1
 fi
 
-RTL_TEST_OUTPUT=$(timeout 1s rtl_test -d 0 2>&1 | grep -P '^\s+\d+:\s+\S+?,\s+\S+?,\s+SN:\s+\S+?\s*$' || true)
-
-IFS=$'\n'
-for RTL_TEST_OUTPUT_LINE in $RTL_TEST_OUTPUT; do
-	# Unset variables in case any regexes fail
-	unset RTL_DEVICE_ID RTL_DEVICE_MAKE RTL_DEVICE_MODEL RTL_DEVICE_SERIAL
-
-	# Pull variables from output via regex
-	RTL_DEVICE_NUMBER=$(echo "$RTL_TEST_OUTPUT_LINE" | grep -oP '^\s+\K\d+(?=:\s+\S+?,\s+\S+?,\s+SN:\s+\S+?\s*$)')
-	RTL_DEVICE_SERIAL=$(echo "$RTL_TEST_OUTPUT_LINE" | grep -oP '^\s+\d+:\s+\S+?,\s+\S+?,\s+SN:\s+\K\S+?(?=\s*$)')
-
-	# See if we've found the device we're looking for
-	if [[ -n "$SERIAL" && "$SERIAL" == "$RTL_DEVICE_SERIAL" ]]; then
-		OUTPUT_DEVICE_ID="$RTL_DEVICE_NUMBER"
+mapfile -t RTL_TEST_OUTPUT < <(timeout 1s rtl_test -d 0 2>&1 | grep -P '^\s+\d+:\s.*?,.*?,\s+SN:\s+.*?$' | IFS=$'\n' sed -n 's/^\s*\([^:]*\):[^,]*,[^,]*,\s*SN:\s*\(.*\)$/\1,\2/; s/\s*$//p' || true)
+for RTL_TEST_OUTPUT_LINE in "${RTL_TEST_OUTPUT[@]}"; do
+        if [[ "${RTL_TEST_OUTPUT_LINE##*,}" == "$SERIAL" ]]; then
+		DEVICE_ID="${RTL_TEST_OUTPUT_LINE%%,*}"
 	fi
 done
 
-if [[ -z "${OUTPUT_DEVICE_ID}" ]]; then
-	echo "Could not find device ID for serial '$SERIAL'"
-	exit 1
+if [[ -z "${DEVICE_ID}" ]]; then
+        echo "Could not find Device ID for serial '$SERIAL'"
+        exit 1
 fi
 
 rm -rf /etc/services.d/vdlm2dec/run > /dev/null 2>&1
