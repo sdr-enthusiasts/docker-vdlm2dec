@@ -77,7 +77,7 @@ echo "[vdlm2dec] Starting: '$GDB_COMMAND $VDLM_BIN" "${VDLM_CMD[*]}'"
 
 if [[ ${QUIET_LOGS,,} =~ true ]]; then
 	# shellcheck disable=SC2016
-	"$GDB_COMMAND $VDLM_BIN" "${VDLM_CMD[@]}" 2>&1 | \
+	"$GDB_COMMAND" "$VDLM_BIN" "${VDLM_CMD[@]}" 2>&1 | \
 	stdbuf -oL sed --unbuffered '/^$/d' | \
 	stdbuf -oL awk '! /^dumpvdl2/' | \
 	stdbuf -oL awk '! /^Sampling rate set/' | \
