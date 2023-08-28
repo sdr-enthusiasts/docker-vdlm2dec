@@ -34,7 +34,7 @@ RUN set -x && \
     git clone https://github.com/wiedehopf/vdlm2dec.git /src/vdlm2dec && \
     pushd /src/vdlm2dec && \
     # fix for floating point amd64 nonsense
-    sed -i 's/add_compile_options(-Ofast -march=native )/add_compile_options(-O2 )/g' && \
+    sed -i 's/add_compile_options(-Ofast -march=native )/add_compile_options(-O2 )/g' CMakeLists.txt && \
     mkdir build && \
     pushd build && \
     cmake ../ -Drtl=ON -DCMAKE_BUILD_TYPE=Debug && \
