@@ -1,0 +1,8 @@
+#!/command/with-contenv bash
+
+# if GDB is set, install GDB
+
+if [ -n "$GDB" ]; then
+    echo "Installing GDB"
+    apt-get update && apt-get install -y gdb
+fi
