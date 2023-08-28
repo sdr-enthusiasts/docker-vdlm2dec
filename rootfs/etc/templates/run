@@ -65,19 +65,19 @@ VDLM_CMD+=($FREQ_STRING)
 # if GDB is set, set GDB_COMMAND
 
 if [ -n "$GDB" ]; then
-	echo "Using GDB"
-	GDB_COMMAND="gdb -batch -ex 'set confirm off' -ex 'handle SIGTERM nostop print pass' -ex 'handle SIGINT nostop print pass' -ex run -ex 'bt full' --args"
-else
-	GDB_COMMAND=""
+	echo "GDB is set. vdlm2dec will not run automatically. Please run the following command to start vdlm2dec:"
+	echo "gdb -batch -ex 'set confirm off' -ex 'handle SIGTERM nostop print pass' -ex 'handle SIGINT nostop print pass' -ex run -ex 'bt full' --args $VDLM_BIN ${VDLM_CMD[*]}"
+	sleep 86400
+	exit 0
 fi
 
 set -eo pipefail
 
-echo "[vdlm2dec] Starting: '$GDB_COMMAND $VDLM_BIN" "${VDLM_CMD[*]}'"
+echo "[vdlm2dec] Starting: '$VDLM_BIN" "${VDLM_CMD[*]}'"
 
 if [[ ${QUIET_LOGS,,} =~ true ]]; then
 	# shellcheck disable=SC2016
-	"$GDB_COMMAND $VDLM_BIN ${VDLM_CMD[@]}" 2>&1 | \
+	"$VDLM_BIN" "${VDLM_CMD[@]}" 2>&1 | \
 	stdbuf -oL sed --unbuffered '/^$/d' | \
 	stdbuf -oL awk '! /^dumpvdl2/' | \
 	stdbuf -oL awk '! /^Sampling rate set/' | \
@@ -97,7 +97,7 @@ if [[ ${QUIET_LOGS,,} =~ true ]]; then
 	stdbuf -oL awk '{print "[vdlm2dec] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
 else
 	# shellcheck disable=SC2016
-	"$GDB_COMMAND $VDLM_BIN ${VDLM_CMD[@]}" \
+	"$VDLM_BIN" "${VDLM_CMD[@]}" \
 	2>&1 | stdbuf -oL sed --unbuffered '/^$/d' | stdbuf -oL awk '{print "[vdlm2dec] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
 fi
 
