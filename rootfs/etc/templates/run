@@ -62,6 +62,15 @@ fi
 # shellcheck disable=SC2206
 VDLM_CMD+=($FREQ_STRING)
 
+# if GDB is set, set GDB_COMMAND
+
+if [ -n "$GDB" ]; then
+	echo "GDB is set. vdlm2dec will not run automatically. Please run the following command to start vdlm2dec:"
+	echo "gdb -batch -ex 'set confirm off' -ex 'handle SIGTERM nostop print pass' -ex 'handle SIGINT nostop print pass' -ex run -ex 'bt full' --args $VDLM_BIN ${VDLM_CMD[*]}"
+	sleep 86400
+	exit 0
+fi
+
 set -eo pipefail
 
 echo "[vdlm2dec] Starting: '$VDLM_BIN" "${VDLM_CMD[*]}'"
