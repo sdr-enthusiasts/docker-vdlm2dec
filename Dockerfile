@@ -11,7 +11,7 @@ ENV DEVICE_INDEX="" \
     SERVER_PORT="5555" \
     MODE="J"
 
-# hadolint ignore=DL3008,SC2086,SC2039
+# hadolint ignore=DL3008,SC2086,SC2039,SC3054
 RUN set -x && \
     TEMP_PACKAGES=() && \
     KEPT_PACKAGES=() && \
@@ -35,7 +35,7 @@ RUN set -x && \
     pushd /src/vdlm2dec && \
     mkdir build && \
     pushd build && \
-    cmake ../ -Drtl=ON && \
+    cmake ../ -Drtl=ON -DCMAKE_BUILD_TYPE=Debug && \
     make && \
     make install && \
     popd && popd && \
