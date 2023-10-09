@@ -25,7 +25,7 @@ The default `SERVER` and `SERVER_PORT` values are suitable for automatically wor
 ## Up and running
 
 ```yaml
-version: '2.0'
+version: "2.0"
 
 services:
   vdlm2dec:
@@ -48,15 +48,15 @@ services:
 
 ## Configuration options
 
-| Variable | Description | Required | Default |
-|----------|-------------|---------|--------|
-| `TZ` | Your timezone | No | UTC |
-| `SERIAL` | The serial number of your RTL-SDR dongle | Yes | Blank |
-| `FEED_ID` | Used by the decoder to insert a unique ID in to the output message | Yes | Blank |
-| `FREQUENCIES` | Colon-separated list of frequencies, but to a maximum of 8, for the decoder to list to | Yes | Blank |
-| `PPM` | Parts per million correction of the decoder | No | 0 |
-| `GAIN`| The gain applied to the RTL-SDR dongle. If you want to set the gain manually it is set in tenth of db (ie -g 90 for +9db) | No | `400` |
-| `SERVER` | The server where messages will be forwarded to. | No | Blank |
-| `SERVER_PORT` | The port where the server will receive messages on. | No | `5550` |
-| `MODE` | The output mode. `P` for planeplotter, `J` for JSON and `A` for acarsdec. | No | `J` |
-| `QUIET_LOGS` | Mute log output to the bare minimum. Set to `false` to disable. | No | `TRUE` |
+| Variable      | Description                                                                                                               | Required | Default |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
+| `TZ`          | Your timezone                                                                                                             | No       | UTC     |
+| `SERIAL`      | The serial number of your RTL-SDR dongle                                                                                  | Yes      | Blank   |
+| `FEED_ID`     | Used by the decoder to insert a unique ID in to the output message                                                        | Yes      | Blank   |
+| `FREQUENCIES` | Colon-separated list of frequencies, but to a maximum of 8, for the decoder to list to                                    | Yes      | Blank   |
+| `PPM`         | Parts per million correction of the decoder                                                                               | No       | 0       |
+| `GAIN`        | The gain applied to the RTL-SDR dongle. If you want to set the gain manually it is set in tenth of db (ie -g 90 for +9db) | No       | `400`   |
+| `SERVER`      | The server where messages will be forwarded to.                                                                           | No       | Blank   |
+| `SERVER_PORT` | The port where the server will receive messages on.                                                                       | No       | `5550`  |
+| `MODE`        | The output mode. `P` for planeplotter, `J` for JSON and `A` for acarsdec.                                                 | No       | `J`     |
+| `QUIET_LOGS`  | Mute log output to the bare minimum. Set to `false` to disable.                                                           | No       | `TRUE`  |
