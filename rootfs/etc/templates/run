@@ -14,12 +14,7 @@ VDLM_BIN="/usr/local/bin/vdlm2dec"
 # shellcheck disable=SC2001
 FREQ_STRING=""
 
-mapfile -t RTL_TEST_OUTPUT < <(timeout 1s rtl_test -d 0 2>&1 | grep -P '^\s+\d+:\s.*?,.*?,\s+SN:\s+.*?$' | IFS=$'\n' sed -n 's/^\s*\([^:]*\):[^,]*,[^,]*,\s*SN:\s*\(.*\)$/\1,\2/; s/\s*$//p' || true)
-for RTL_TEST_OUTPUT_LINE in "${RTL_TEST_OUTPUT[@]}"; do
-        if [[ "${RTL_TEST_OUTPUT_LINE##*,}" == "$SERIAL" ]]; then
-		DEVICE_ID="${RTL_TEST_OUTPUT_LINE%%,*}"
-	fi
-done
+DEVICE_ID="$(timeout 1s rtl_test -d $((RANDOM+99)) 2>&1 | grep -P -e "SN: $SERIAL" | sed -n 's/^\s*\([0-9]\+\):.*$/\1/p')"
 
 if [[ -z "${DEVICE_ID}" ]]; then
 	echo "Could not find device ID for serial '$SERIAL'"
