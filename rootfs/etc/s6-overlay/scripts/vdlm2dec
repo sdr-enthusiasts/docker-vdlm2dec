@@ -1,11 +1,16 @@
 #!/command/with-contenv bash
 #shellcheck shell=bash
 
+SCRIPT_NAME="$(basename "$0")"
+SCRIPT_NAME="${SCRIPT_NAME%.*}"
+
+# shellcheck disable=SC2034
+s6wrap=(s6wrap --quiet --timestamps --prepend="$SCRIPT_NAME" --args)
 # Require that vdlm_server is running
 if ! netstat -an | grep -P '^\s*tcp\s+\d+\s+\d+\s+0\.0\.0\.0:15555\s+(?>\d{1,3}\.{0,1}){4}:\*\s+LISTEN\s*$' > /dev/null; then
   sleep 1
   if [[ ! ${QUIET_LOGS,,} =~ true ]]; then
-    echo "[vdlm2dec] vdlm_server not running, exiting"
+    "${s6wrap[@]}" echo "vdlm_server not running, exiting"
   fi
   exit
 fi
@@ -13,14 +18,6 @@ fi
 VDLM_BIN="/usr/local/bin/vdlm2dec"
 # shellcheck disable=SC2001
 FREQ_STRING=""
-
-DEVICE_ID="$(timeout 1s rtl_test -d $((RANDOM+99)) 2>&1 | grep -P -e "SN: $SERIAL" | sed -n 's/^\s*\([0-9]\+\):.*$/\1/p')"
-
-if [[ -z "${DEVICE_ID}" ]]; then
-	echo "Could not find device ID for serial '$SERIAL'"
-	sleep 60
-	exit 1
-fi
 
 if [ -z "$GAIN" ]; then
     GAIN="400"
@@ -50,8 +47,8 @@ if [ -n "${SERVER}" ]; then
 fi
 
 # Specify device ID
-if [ -n "${DEVICE_ID}" ]; then
-	VDLM_CMD+=("-r" "$DEVICE_ID")
+if [ -n "${SERIAL}" ]; then
+	VDLM_CMD+=("-r" "$SERIAL")
 fi
 
 # shellcheck disable=SC2206
@@ -68,11 +65,11 @@ fi
 
 set -eo pipefail
 
-echo "[vdlm2dec] Starting: '$VDLM_BIN" "${VDLM_CMD[*]}'"
+"${s6wrap[@]}" echo "Starting: '$VDLM_BIN" "${VDLM_CMD[*]}'"
 
 if [[ ${QUIET_LOGS,,} =~ true ]]; then
 	# shellcheck disable=SC2016
-	"$VDLM_BIN" "${VDLM_CMD[@]}" 2>&1 | \
+	"${s6wrap[@]}" "$VDLM_BIN" "${VDLM_CMD[@]}" 2>&1 | \
 	stdbuf -oL sed --unbuffered '/^$/d' | \
 	stdbuf -oL awk '! /^dumpvdl2/' | \
 	stdbuf -oL awk '! /^Sampling rate set/' | \
@@ -89,11 +86,10 @@ if [[ ${QUIET_LOGS,,} =~ true ]]; then
 	stdbuf -oL awk '! /^Set center freq. /' | \
 	stdbuf -oL awk '! /^Decoding [0-9]+ channels/' | \
 	stdbuf -oL awk '! /^Allocating [0-9]+ zero-copy buffers/' | \
-	stdbuf -oL awk '{print "[vdlm2dec] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
+	stdbuf -oL awk '{print $0}'
 else
 	# shellcheck disable=SC2016
-	"$VDLM_BIN" "${VDLM_CMD[@]}" \
-	2>&1 | stdbuf -oL sed --unbuffered '/^$/d' | stdbuf -oL awk '{print "[vdlm2dec] " strftime("%Y/%m/%d %H:%M:%S", systime()) " " $0}'
+	"${s6wrap[@]}" "$VDLM_BIN" "${VDLM_CMD[@]}"
 fi
 
 sleep 5
