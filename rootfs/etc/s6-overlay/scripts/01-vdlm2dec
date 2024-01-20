@@ -51,11 +51,6 @@ if [[ "${MODE}" != @(J|j|P|p|A|a) ]]; then
 	exit 1
 fi
 
-if [[ -n "${SERVER}" && -z "${SERVER_PORT}" ]]; then
-	"${s6wrap[@]}" echo "SERVER is set but SERVER_PORT is not set, exiting"
-	exit 1
-fi
-
 # DEVICE_ID or SERIAL needs to be set
 
 if [[ -z "${SERIAL}" ]]; then

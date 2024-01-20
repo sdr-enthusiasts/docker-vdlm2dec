@@ -6,14 +6,6 @@ SCRIPT_NAME="${SCRIPT_NAME%.*}"
 
 # shellcheck disable=SC2034
 s6wrap=(s6wrap --quiet --timestamps --prepend="$SCRIPT_NAME" --args)
-# Require that vdlm_server is running
-if ! netstat -an | grep -P '^\s*tcp\s+\d+\s+\d+\s+0\.0\.0\.0:15555\s+(?>\d{1,3}\.{0,1}){4}:\*\s+LISTEN\s*$' > /dev/null; then
-  sleep 1
-  if [[ ! ${QUIET_LOGS,,} =~ true ]]; then
-    "${s6wrap[@]}" echo "vdlm_server not running, exiting"
-  fi
-  exit
-fi
 
 VDLM_BIN="/usr/local/bin/vdlm2dec"
 # shellcheck disable=SC2001
@@ -35,20 +27,23 @@ if [ -n "${QUIET_LOGS}" ]; then
 	VDLM_CMD+=("-v")
 fi
 
-# Send output JSON to acars_server
-if [ -n "${SERVER}" ]; then
-	if [[ "${MODE}" == @(J|j) ]]; then
-		VDLM_CMD+=("-j" "127.0.0.1:5555")
-	elif [[ "${MODE}" == @(P|p) ]]; then
-		VDLM_CMD+=("-n" "127.0.0.1:5555")
-	elif [[ "${MODE}" == @(A|a) ]]; then
-		VDLM_CMD+=("-N" "127.0.0.1:5555")
-	fi
+
+if [[ "${MODE}" == @(J|j) ]]; then
+	VDLM_CMD+=("-j" "127.0.0.1:5555")
+elif [[ "${MODE}" == @(P|p) ]]; then
+	VDLM_CMD+=("-n" "127.0.0.1:5555")
+elif [[ "${MODE}" == @(A|a) ]]; then
+	VDLM_CMD+=("-N" "127.0.0.1:5555")
 fi
+
 
 # Specify device ID
 if [ -n "${SERIAL}" ]; then
 	VDLM_CMD+=("-r" "$SERIAL")
+fi
+
+if [[ -n "$VDLM2DEC_COMMAND_EXTRA" ]]; then
+	VDLM_CMD+=("$VDLM2DEC_COMMAND_EXTRA")
 fi
 
 # shellcheck disable=SC2206
