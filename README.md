@@ -26,7 +26,6 @@ version: "2.0"
 services:
   vdlm2dec:
     image: ghcr.io/sdr-enthusiasts/docker-vdlm2dec:latest
-    tty: true
     container_name: vdlm2dec
     restart: always
     device_cgroup_rules:
