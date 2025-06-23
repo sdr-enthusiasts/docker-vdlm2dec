@@ -69,7 +69,6 @@ jobs:
 
   deploy_test:
     name: Deploy as test
-    needs: [consolidate_binaries]
     if: |
       github.event.inputs.build_latest_as_test == 'true' &&
       (github.event.inputs.use_test_image == 'false' || github.event.inputs.use_test_image == '')
