@@ -18,16 +18,6 @@ on:
         description: "Build latest as test"
         default: false
 
-  # Build and deploy the image on pushes to main branch
-  push:
-    branches:
-      - main
-    paths:
-      - "rust/**"
-      - "Dockerfile"
-      - "Dockerfile.build_binary"
-      - "rootfs/**"
-
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
