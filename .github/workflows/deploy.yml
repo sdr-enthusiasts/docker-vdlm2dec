@@ -61,9 +61,6 @@ jobs:
       build_platform_specific: false
       build_nohealthcheck: false
       build_baseimage_url: :acars-decoder/:acars-decoder-test-pr
-      cache_enabled: true
-      cache_path: ./bin/
-      cache_key: ${{ github.run_id }}
     secrets:
       ghcr_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -89,8 +86,5 @@ jobs:
       build_platform_specific: false
       build_nohealthcheck: false
       build_baseimage_url: :acars-decoder/:acars-decoder-test-pr
-      cache_enabled: true
-      cache_path: ./bin/
-      cache_key: ${{ github.run_id }}
     secrets:
       ghcr_token: ${{ secrets.GITHUB_TOKEN }}
