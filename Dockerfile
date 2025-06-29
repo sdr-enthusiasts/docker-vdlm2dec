@@ -1,5 +1,5 @@
 FROM ghcr.io/sdr-enthusiasts/acars-bridge:latest AS builder
-FROM ghcr.io/sdr-enthusiasts/docker-baseimage:acars-decoder
+FROM ghcr.io/sdr-enthusiasts/docker-baseimage:acars-decoder-soapy
 
 ENV DEVICE_INDEX="" \
     QUIET_LOGS="TRUE" \
@@ -11,7 +11,8 @@ ENV DEVICE_INDEX="" \
     OUTPUT_SERVER="acars_router" \
     OUTPUT_SERVER_PORT="5555" \
     OUTPUT_SERVER_MODE="udp" \
-    MODE="J"
+    MODE="J" \
+    NO_SDRPLAY_API="TRUE"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 COPY ./rootfs /
